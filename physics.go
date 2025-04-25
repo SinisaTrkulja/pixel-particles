@@ -7,15 +7,14 @@ import (
 
 func update_velocities(particles []Particle) {
 	var wg sync.WaitGroup
-	for i := range particles {
+	for i := range len(particles) - 2 {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			acted_upon := &particles[i]
-			for j, acting := range particles {
-				if i != j {
-					update_velocity(acted_upon, acting)
-				}
+			pa := &particles[i]
+			for j := i + 1; j < len(particles); j++ {
+				pb := &particles[j]
+				update_velocity(pa, pb)
 			}
 
 		}()
@@ -23,15 +22,20 @@ func update_velocities(particles []Particle) {
 	wg.Wait()
 }
 
-func update_velocity(acted_upon *Particle, acting Particle) {
-	wall_collision(acted_upon)
-	interaction_factor := interaction(*acted_upon, acting)
-	ax, ay, damp := calculate_acceleration(*acted_upon, acting)
-	acted_upon.x_speed = (acted_upon.x_speed + ax*interaction_factor) * damp
-	acted_upon.y_speed = (acted_upon.y_speed + ay*interaction_factor) * damp
+func update_velocity(pa, pb *Particle) {
+	detect_wall_collision(pa)
+	detect_wall_collision(pb)
+	interaction_factor_a := interaction(*pa, *pb)
+	interaction_factor_b := interaction(*pb, *pa)
+	ax, ay, damp := calculate_acceleration(*pa, *pb)
+	pa.x_speed = (pa.x_speed + ax*interaction_factor_a) * damp
+	pa.y_speed = (pa.y_speed + ay*interaction_factor_a) * damp
+
+	pb.x_speed = (pb.x_speed + (-1)*ax*interaction_factor_b) * damp
+	pb.y_speed = (pb.y_speed + (-1)*ay*interaction_factor_b) * damp
 }
 
-func wall_collision(p *Particle) {
+func detect_wall_collision(p *Particle) {
 	if p.x_position <= X_MIN_BOUND {
 		p.x_speed = math.Abs(p.x_speed)
 	} else if p.x_position >= X_MAX_BOUND {
@@ -58,7 +62,7 @@ func get_attraction(r float64) (float64, float64) {
 	case r > FORCE_RANGE:
 		return 0.0, 1.0
 	case r < 1.0:
-		return -1.0 / (r + EPSILON), PROXIMA_DAMP
+		return -1.0 / (r + EPSILON), PROXIMAL_DAMP
 	default:
 		return 1.0 / r, DISTAL_DAMP
 	}

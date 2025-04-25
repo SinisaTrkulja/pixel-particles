@@ -8,24 +8,31 @@ import (
 )
 
 const (
-	PARTICLE_COUNT = 6000
-	FORCE_RANGE    = 60.0
-	X_MIN          = 0.0
-	X_MAX          = 1024.0
-	Y_MIN          = 0.0
-	Y_MAX          = 700
-	RADIUS         = 2.0
-	CHARGE         = 1.7
-	DELTA          = 1.0
-	PROXIMA_DAMP   = 1.0
-	DISTAL_DAMP    = 0.9995
-	EPSILON        = 0.2
+	FORCE_RANGE = 60.0
+	X_MIN       = 0.0
+	X_MAX       = 1424.0
+	Y_MIN       = 0.0
+	Y_MAX       = 800.0
+	RADIUS      = 3.0
 
-	X_MIN_BOUND = X_MIN + RADIUS + WALL_OFFSET
-	X_MAX_BOUND = X_MAX - RADIUS - WALL_OFFSET
-	Y_MIN_BOUND = Y_MIN + RADIUS + WALL_OFFSET
-	Y_MAX_BOUND = Y_MAX - RADIUS - WALL_OFFSET
-	WALL_OFFSET = 55.0
+	DELTA         = 1.0
+	PROXIMAL_DAMP = 1.0
+	DISTAL_DAMP   = 0.9995
+
+	X_MIN_BOUND       = X_MIN + RADIUS + WALL_OFFSET
+	X_MAX_BOUND       = X_MAX - RADIUS - WALL_OFFSET
+	Y_MIN_BOUND       = Y_MIN + RADIUS + WALL_OFFSET
+	Y_MAX_BOUND       = Y_MAX - RADIUS - WALL_OFFSET
+	WALL_OFFSET       = 25.0
+	COUNT_CHANGE_STEP = 100
+)
+
+var (
+	PARTICLE_COUNT = 4000
+	CHARGE         = 1.7
+	EPSILON        = 0.2
+	PAUSED         = false
+	FADE_TRAIL     = false
 )
 
 func main() {
@@ -34,9 +41,10 @@ func main() {
 
 func run() {
 	cfg := opengl.WindowConfig{
-		Title:  "Particle Simulator",
-		Bounds: pixel.R(X_MIN, Y_MIN, X_MAX, Y_MAX),
-		VSync:  true,
+		Title:                  "Particle Simulator",
+		Bounds:                 pixel.R(X_MIN, Y_MIN, X_MAX, Y_MAX),
+		VSync:                  true,
+		TransparentFramebuffer: true,
 	}
 	win, err := opengl.NewWindow(cfg)
 	if err != nil {
@@ -44,10 +52,9 @@ func run() {
 	}
 	particles := init_particles(PARTICLE_COUNT)
 
+	//win.SetSmooth(true)
 	for !win.Closed() {
-		if win.JustPressed(pixel.KeyP) {
-			PAUSED = !PAUSED // Toggle pause state
-		}
+		key_listener(win, &particles)
 		win.Clear(colornames.Black)
 		if !PAUSED {
 			update_particles(particles)
@@ -64,10 +71,32 @@ func update_particles(particles []Particle) {
 
 func draw_particles(win *opengl.Window, particles []Particle) {
 	imd := imdraw.New(nil)
-	for _, particle := range particles {
+	for i := range particles {
+		particle := &particles[i]
+		if FADE_TRAIL {
+			trail_animation(particle, imd)
+		}
+
 		imd.Color = particle.color.rgba
 		imd.Push(pixel.V(particle.x_position, particle.y_position))
 		imd.Circle(particle.radius, 0)
 	}
 	imd.Draw(win)
+}
+
+func trail_animation(particle *Particle, imd *imdraw.IMDraw) {
+	particle.trail = append(particle.trail, pixel.V(particle.x_position, particle.y_position))
+	if len(particle.trail) > 4 {
+		particle.trail = particle.trail[1:]
+	}
+	for i, pos := range particle.trail {
+		t := float64(i) / float64(len(particle.trail))
+		alpha := t * 0.5
+		rgba := particle.color.rgba
+		rgba.A = alpha
+		imd.Color = rgba
+		imd.Push(pos)
+		radius := particle.radius * (1.0 + 0.5*(1-t))
+		imd.Circle(radius, 0)
+	}
 }

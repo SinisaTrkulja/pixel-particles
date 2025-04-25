@@ -11,4 +11,5 @@ type Particle struct {
 	x_position, y_position, x_speed, y_speed float64
 	radius                                   float64
 	color                                    Color
+	trail                                    []pixel.Vec
 }

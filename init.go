@@ -14,8 +14,6 @@ var (
 	GREEN  = Color{to_pixel_color(colornames.Green), 2}
 	YELLOW = Color{to_pixel_color(colornames.Yellow), 3}
 	PURPLE = Color{to_pixel_color(colornames.Purple), 4}
-
-	PAUSED = true
 )
 
 func init_particles(particle_count int) []Particle {
@@ -31,6 +29,7 @@ func init_particles(particle_count int) []Particle {
 			y_speed:    0, // rand.Float64() * SPEED,
 			radius:     RADIUS,
 			color:      colors[rand.Intn(len(colors))],
+			trail:      make([]pixel.Vec, 0, 20),
 		}
 	}
 	return particles

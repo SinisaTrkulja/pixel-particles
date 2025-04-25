@@ -11,5 +11,5 @@ require (
 	github.com/gopxl/glhf/v2 v2.0.0 // indirect
 	github.com/gopxl/mainthread/v2 v2.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/image v0.19.0 // indirect
+	golang.org/x/image v0.19.0
 )

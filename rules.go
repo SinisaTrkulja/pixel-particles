@@ -9,6 +9,6 @@ var interactionMatrix = [][]float64{
 	{0.01, 0.02, 0.01, 0.03, 0.015},   // Purple
 }
 
-func interaction_sign(acted_upon, acting Particle) float64 {
+func interaction(acted_upon, acting Particle) float64 {
 	return interactionMatrix[acted_upon.color.position][acting.color.position]
 }

@@ -14,6 +14,8 @@ var (
 	GREEN  = Color{to_pixel_color(colornames.Green), 2}
 	YELLOW = Color{to_pixel_color(colornames.Yellow), 3}
 	PURPLE = Color{to_pixel_color(colornames.Purple), 4}
+
+	PAUSED = true
 )
 
 func init_particles(particle_count int) []Particle {
@@ -23,8 +25,8 @@ func init_particles(particle_count int) []Particle {
 	particles := make([]Particle, particle_count)
 	for i := range particle_count {
 		particles[i] = Particle{
-			x_position: rand.Float64() * float64(X_MAX),
-			y_position: rand.Float64() * float64(Y_MAX),
+			x_position: rand.Float64()*float64(X_MAX_BOUND-X_MIN_BOUND) + X_MIN_BOUND,
+			y_position: rand.Float64()*float64(Y_MAX_BOUND-Y_MIN_BOUND) + Y_MIN_BOUND,
 			x_speed:    0, // rand.Float64() * SPEED,
 			y_speed:    0, // rand.Float64() * SPEED,
 			radius:     RADIUS,

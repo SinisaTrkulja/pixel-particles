@@ -32,6 +32,14 @@ func init_particles(particle_count int) []Particle {
 			trail:      make([]pixel.Vec, 0, 20),
 		}
 	}
+	// Add positions
+	for i := range particles {
+		positions_and_velocities[i*5] = float32(particles[i].x_position)
+		positions_and_velocities[i*5+1] = float32(particles[i].y_position)
+		positions_and_velocities[i*5+2] = float32(particles[i].x_speed)
+		positions_and_velocities[i*5+3] = float32(particles[i].y_speed)
+		positions_and_velocities[i*5+4] = float32(particles[i].color.position)
+	}
 	return particles
 }
 

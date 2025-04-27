@@ -7,6 +7,7 @@ import (
 	"github.com/gopxl/pixel/v2"
 	"github.com/gopxl/pixel/v2/backends/opengl"
 	"github.com/gopxl/pixel/v2/ext/imdraw"
+
 	"golang.org/x/image/colornames"
 )
 
@@ -31,11 +32,24 @@ const (
 )
 
 var (
-	PARTICLE_COUNT = 4000
-	CHARGE         = 1.7
-	EPSILON        = 0.2
-	PAUSED         = false
-	FADE_TRAIL     = false
+	PARTICLE_COUNT int = 1024
+	CHARGE             = 1.7
+	EPSILON            = 0.2
+	PAUSED             = true
+	FADE_TRAIL         = false
+	RAN                = false
+
+	positions_and_velocities = make([]float32, PARTICLE_COUNT*5)
+
+	particles = init_particles(PARTICLE_COUNT)
+
+	interactionMatrix2 = []float32{
+		0.04, 0.05, -0.02, -0.03, -0.01, // Red
+		-0.04, -0.01, -0.03, 0.04, 0.02, // Blue
+		0.03, -0.03, -0.07, -0.04, 0.01, // Green
+		-0.02, 0.03, -0.03, 0.02, 0.04, // Yellow
+		0.01, 0.02, 0.01, 0.03, 0.015, // Purple
+	}
 )
 
 func main() {
@@ -53,7 +67,8 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	particles := init_particles(PARTICLE_COUNT)
+
+	context, queue, kernel := init_kernel()
 
 	//win.SetSmooth(true)
 	var last_time time.Time
@@ -62,7 +77,11 @@ func run() {
 		log_fps(&last_time, particles)
 		key_listener(win, &particles)
 		if !PAUSED {
-			update_particles(particles)
+			if !RAN {
+				kernel_call(context, queue, kernel)
+				RAN = true
+			}
+			// update_particles(particles)
 		}
 		draw_particles(win, particles)
 		win.Update()

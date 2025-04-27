@@ -90,6 +90,4 @@ func update_position(particle *Particle) {
 	} else {
 		particle.y_position = min(new_y, Y_MAX_BOUND)
 	}
-	particle.x_position += particle.x_speed * DELTA
-	particle.y_position += particle.y_speed * DELTA
 }

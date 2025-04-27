@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gopxl/pixel/v2"
 	"github.com/gopxl/pixel/v2/backends/opengl"
 	"github.com/gopxl/pixel/v2/ext/imdraw"
@@ -53,15 +56,25 @@ func run() {
 	particles := init_particles(PARTICLE_COUNT)
 
 	//win.SetSmooth(true)
+	var last_time time.Time
 	for !win.Closed() {
-		key_listener(win, &particles)
 		win.Clear(colornames.Black)
+		log_fps(&last_time, particles)
+		key_listener(win, &particles)
 		if !PAUSED {
 			update_particles(particles)
 		}
 		draw_particles(win, particles)
 		win.Update()
 	}
+}
+
+func log_fps(last_time *time.Time, particles []Particle) {
+	current_time := time.Now()
+	elapsed := current_time.Sub(*last_time).Seconds()
+	*last_time = current_time
+	fps := 1.0 / elapsed
+	fmt.Printf("\rParticle Count: %d | FPS: %.2f", len(particles), fps)
 }
 
 func update_particles(particles []Particle) {
@@ -76,7 +89,6 @@ func draw_particles(win *opengl.Window, particles []Particle) {
 		if FADE_TRAIL {
 			trail_animation(particle, imd)
 		}
-
 		imd.Color = particle.color.rgba
 		imd.Push(pixel.V(particle.x_position, particle.y_position))
 		imd.Circle(particle.radius, 0)

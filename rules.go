@@ -19,7 +19,7 @@ func interaction(pa, pb Particle) (float64, float64) {
 		interactionMatrix[pb.color.position][pb.color.position]
 }
 
-func key_listener(win *opengl.Window, particles *[]Particle) {
+func key_listener(win *opengl.Window, particles *[]Particle, positions_and_velocities *[]float32) {
 	switch {
 	case win.JustPressed(pixel.KeyP):
 		PAUSED = !PAUSED
@@ -34,10 +34,15 @@ func key_listener(win *opengl.Window, particles *[]Particle) {
 	case win.JustPressed(pixel.KeyV):
 		EPSILON -= 0.1
 	case win.JustPressed(pixel.KeyR):
-		*particles = init_particles(PARTICLE_COUNT)
+		*particles, *positions_and_velocities = init_particles(PARTICLE_COUNT)
 	case win.JustPressed(pixel.KeyUp):
-		*particles = append(*particles, init_particles(COUNT_CHANGE_STEP)...)
+		new_particles, new_positions_and_velocities := init_particles(COUNT_CHANGE_STEP)
+		*particles = append(*particles, new_particles...)
+		*positions_and_velocities = append(*positions_and_velocities, new_positions_and_velocities...)
+		PARTICLE_COUNT += COUNT_CHANGE_STEP
 	case win.JustPressed(pixel.KeyDown):
 		*particles = (*particles)[COUNT_CHANGE_STEP:]
+		*positions_and_velocities = (*positions_and_velocities)[COUNT_CHANGE_STEP*5:]
+		PARTICLE_COUNT -= COUNT_CHANGE_STEP
 	}
 }

@@ -23,12 +23,12 @@ const (
 	PROXIMAL_DAMP = 1.0
 	DISTAL_DAMP   = 0.9995
 
-	X_MIN_BOUND       = X_MIN + RADIUS + WALL_OFFSET
-	X_MAX_BOUND       = X_MAX - RADIUS - WALL_OFFSET
-	Y_MIN_BOUND       = Y_MIN + RADIUS + WALL_OFFSET
-	Y_MAX_BOUND       = Y_MAX - RADIUS - WALL_OFFSET
-	WALL_OFFSET       = 25.0
-	COUNT_CHANGE_STEP = 100
+	X_MIN_BOUND           = X_MIN + RADIUS + WALL_OFFSET
+	X_MAX_BOUND           = X_MAX - RADIUS - WALL_OFFSET
+	Y_MIN_BOUND           = Y_MIN + RADIUS + WALL_OFFSET
+	Y_MAX_BOUND           = Y_MAX - RADIUS - WALL_OFFSET
+	WALL_OFFSET           = 25.0
+	COUNT_CHANGE_STEP int = 128
 )
 
 var (
@@ -39,9 +39,7 @@ var (
 	FADE_TRAIL         = false
 	RAN                = false
 
-	positions_and_velocities = make([]float32, PARTICLE_COUNT*5)
-
-	particles = init_particles(PARTICLE_COUNT)
+	particles, positions_and_velocities = init_particles(PARTICLE_COUNT)
 
 	interactionMatrix2 = []float32{
 		0.04, 0.05, -0.02, -0.03, -0.01, // Red
@@ -68,20 +66,16 @@ func run() {
 		panic(err)
 	}
 
-	context, queue, kernel := init_kernel()
-
 	//win.SetSmooth(true)
 	var last_time time.Time
 	for !win.Closed() {
 		win.Clear(colornames.Black)
 		log_fps(&last_time, particles)
-		key_listener(win, &particles)
+		key_listener(win, &particles, &positions_and_velocities)
 		if !PAUSED {
-			if !RAN {
-				kernel_call(context, queue, kernel)
-				RAN = true
-			}
-			// update_particles(particles)
+			//update_particles(particles)
+			kernel_call(particles)
+			//PAUSED = !PAUSED
 		}
 		draw_particles(win, particles)
 		win.Update()

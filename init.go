@@ -16,7 +16,7 @@ var (
 	PURPLE = Color{to_pixel_color(colornames.Purple), 4}
 )
 
-func init_particles(particle_count int) []Particle {
+func init_particles(particle_count int) ([]Particle, []float32) {
 	var colors = []Color{
 		RED, BLUE, GREEN, YELLOW, PURPLE,
 	}
@@ -33,6 +33,8 @@ func init_particles(particle_count int) []Particle {
 		}
 	}
 	// Add positions
+
+	positions_and_velocities := make([]float32, particle_count*5)
 	for i := range particles {
 		positions_and_velocities[i*5] = float32(particles[i].x_position)
 		positions_and_velocities[i*5+1] = float32(particles[i].y_position)
@@ -40,7 +42,7 @@ func init_particles(particle_count int) []Particle {
 		positions_and_velocities[i*5+3] = float32(particles[i].y_speed)
 		positions_and_velocities[i*5+4] = float32(particles[i].color.position)
 	}
-	return particles
+	return particles, positions_and_velocities
 }
 
 func to_pixel_color(c color.RGBA) pixel.RGBA {
